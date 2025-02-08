@@ -262,6 +262,7 @@ export default function OrdersPage() {
                         <TableHead>Produit</TableHead>
                         <TableHead>Quantité</TableHead>
                         <TableHead>Prix unitaire</TableHead>
+                        <TableHead>Livraison</TableHead>
                         <TableHead>Total</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -291,13 +292,16 @@ export default function OrdersPage() {
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell>{formatPrice(item.price)}</TableCell>
                           <TableCell>
+                            {item.shippingRegion || "Casablanca"}
+                          </TableCell>
+                          <TableCell>
                             {formatPrice(item.price * item.quantity)}
                           </TableCell>
                         </TableRow>
                       ))}
                       <TableRow>
                         <TableCell
-                          colSpan={3}
+                          colSpan={4}
                           className="text-right font-medium"
                         >
                           Sous-total
@@ -308,7 +312,7 @@ export default function OrdersPage() {
                       </TableRow>
                       <TableRow>
                         <TableCell
-                          colSpan={3}
+                          colSpan={4}
                           className="text-right font-medium"
                         >
                           Livraison
@@ -318,7 +322,7 @@ export default function OrdersPage() {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell colSpan={3} className="text-right font-bold">
+                        <TableCell colSpan={4} className="text-right font-bold">
                           Total
                         </TableCell>
                         <TableCell className="font-bold">
