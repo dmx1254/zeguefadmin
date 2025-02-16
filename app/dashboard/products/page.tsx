@@ -1,7 +1,7 @@
 // app/dashboard/products/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Table,
@@ -12,12 +12,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Edit2, Loader } from "lucide-react";
 import Link from "next/link";
-import { OrderC, formatPrice } from "@/lib/utils";
+import { OrderC, ProductDash, formatPrice } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export default function ProductsPage() {
-  const [localOrders, setLocalOrders] = useState<OrderC[]>([]);
+  const [localProducts, setLocalProducts] = useState<ProductDash[]>([]);
+  const [isPriceUpdating, setIsPriceUpdating] = useState<boolean>(false);
+  const [isPriceUpdatingLoader, setIsPriceUpdatingLoader] =
+    useState<boolean>(false);
+  const [price, setPrice] = useState<number | string>(0);
+  const [idProductPriceUpdating, setIdProductPriceUpdating] =
+    useState<string>("");
+
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -29,7 +37,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (products) {
-      setLocalOrders(products);
+      setLocalProducts(products);
     }
   }, [products]);
 
@@ -40,13 +48,50 @@ export default function ProductsPage() {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to update order status");
+      if (!response.ok) throw new Error("Failed to delete product status");
 
-      setLocalOrders((prevOrders) =>
-        prevOrders.filter((p) => p._id !== productId)
+      setLocalProducts((prevProducts) =>
+        prevProducts.filter((p) => p._id !== productId)
       );
     } catch (error) {
       console.error("Error updating order status:", error);
+    }
+  };
+
+  const handleUpdatePrice = async (productId: string) => {
+    try {
+      setIsPriceUpdatingLoader(true);
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ price: Number(price) }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update product status");
+
+      const data = await res.json();
+
+      if (data) {
+        setLocalProducts((prevProducts) =>
+          prevProducts.map((p) => {
+            if (p._id === productId) {
+              return {
+                ...p,
+                price: data.price,
+              };
+            }
+            return p;
+          })
+        );
+        setIsPriceUpdating(false);
+        setIdProductPriceUpdating("");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsPriceUpdatingLoader(false);
     }
   };
 
@@ -88,7 +133,7 @@ export default function ProductsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              products?.map((product: any) => (
+              localProducts?.map((product: ProductDash) => (
                 <TableRow key={product._id}>
                   <TableCell>
                     <img
@@ -98,15 +143,61 @@ export default function ProductsPage() {
                     />
                   </TableCell>
                   <TableCell>{product.name}</TableCell>
-                  <TableCell>{formatPrice(product.price)}</TableCell>
+                  <TableCell>
+                    {idProductPriceUpdating === product._id &&
+                    isPriceUpdating ? (
+                      <div className="flex flex-col items-start gap-2">
+                        <Input
+                          type="number"
+                          defaultValue={product.price}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setPrice(e.target.value)
+                          }
+                        />
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="bg-green-500 text-white transition-colors hover:bg-green-600 text-sm p-1.5 rounded outline-none"
+                            onClick={() => handleUpdatePrice(product._id)}
+                            disabled={isPriceUpdatingLoader}
+                          >
+                            {isPriceUpdatingLoader ? (
+                              <Loader
+                                size={24}
+                                className="text-white animate-spin"
+                              />
+                            ) : (
+                              "Confirmer"
+                            )}
+                          </button>
+                          <button
+                            className="bg-red-500 text-white transition-colors hover:bg-red-600 text-sm p-1.5 rounded outline-none"
+                            onClick={() => {
+                              setIsPriceUpdating(false);
+                              setIdProductPriceUpdating("");
+                            }}
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      formatPrice(product.price)
+                    )}
+                  </TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell>{product.stock}</TableCell>
                   <TableCell className="space-x-2">
-                    {/* <Link href={`/dashboard/products/edit/${product._id}`}>
-                      <Button size="sm" variant="outline">
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                    </Link> */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-orange-600"
+                      onClick={() => {
+                        setIdProductPriceUpdating(product._id);
+                        setIsPriceUpdating(true);
+                      }}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"

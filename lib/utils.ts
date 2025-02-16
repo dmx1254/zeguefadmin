@@ -126,3 +126,22 @@ export interface OrderC {
   paymentMethod: "card" | "cash";
   status: "pending" | "processing" | "completed" | "cancelled";
 }
+
+interface ProductDetails {
+  material?: string;
+  origin: string;
+  care?: string;
+  sizes?: string[];
+}
+
+export interface ProductDash {
+  _id: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  category: string;
+  details: ProductDetails;
+  discount?: number;
+  stock: number;
+}

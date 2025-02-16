@@ -57,12 +57,6 @@ export const options: NextAuthOptions = {
       }
       return session;
     },
-    // async redirect({ url, baseUrl, token }) {
-    //   if (token?.role === "DOCTEUR") {
-    //     return baseUrl + "/dashboard";
-    //   } else {
-    //     return `${baseUrl}/patient/${token?.id}/profile#informations-personnelles`;
-    //   }
-    // },
+   
   },
 };

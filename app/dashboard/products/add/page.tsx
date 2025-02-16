@@ -29,7 +29,7 @@ const AddProduct = () => {
     "djellabas-enfant",
     "caftans",
     "parfums",
-    "or",
+    "folar",
   ];
 
   const availableSizes = ["XS", "S", "M", "L", "XL", "XXL"];

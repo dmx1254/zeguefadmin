@@ -19,3 +19,32 @@ export async function DELETE(
     return NextResponse.json(error, { status: 500 });
   }
 }
+
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const data = await params;
+  const productId = data.id;
+
+  const { price } = await req.json();
+
+  try {
+    const orderUpadted = await ProductModel.findByIdAndUpdate(
+      productId,
+      {
+        $set: {
+          price,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    return NextResponse.json(orderUpadted, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(error, { status: 500 });
+  }
+}
