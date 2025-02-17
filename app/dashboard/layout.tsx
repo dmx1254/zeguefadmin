@@ -11,6 +11,7 @@ import {
   Users,
   LayoutDashboard,
   LogOut,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
@@ -35,6 +36,11 @@ const navigation = [
     name: "Utilisateurs",
     href: "/dashboard/users",
     icon: Users,
+  },
+  {
+    name: "Video",
+    href: "/dashboard/video",
+    icon: Video,
   },
 ];
 
