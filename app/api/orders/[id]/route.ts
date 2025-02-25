@@ -1,6 +1,7 @@
 // app/api/orders/[id]/route.ts
 import { connectDB } from "@/lib/db";
 import OrderModel from "@/lib/models/order.model";
+import ProductModel from "@/lib/models/product.model";
 import { NextResponse } from "next/server";
 
 connectDB();
@@ -25,12 +26,25 @@ export async function PUT(
       orderId,
       { status },
       { new: true, runValidators: true } // Retourne la commande mise à jour
-    );
+    ).lean();
 
     if (!updatedOrder) {
       return NextResponse.json(
         { error: "Commande non trouvée" },
         { status: 404 }
+      );
+    }
+
+    const productParsed = JSON.parse(JSON.stringify(updatedOrder));
+
+    const productId = productParsed.items[0].id;
+
+    if (productId) {
+      await ProductModel.findOneAndUpdate(
+        { _id: productId },
+        {
+          $inc: { stock: -1 },
+        }
       );
     }
 

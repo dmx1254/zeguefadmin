@@ -68,6 +68,8 @@ export default function OrdersPage() {
     setOpenDialog(true);
   };
 
+  // console.log(localOrders);
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
