@@ -120,6 +120,7 @@ export interface OrderC {
   _id: string;
   orderNumber: string;
   userId: string;
+  guest?: string;
   items: Cart[];
   total: number;
   shipping: number;

@@ -38,6 +38,11 @@ const navigation = [
     icon: Users,
   },
   {
+    name: "Commandes Invite",
+    href: "/dashboard/guest-order",
+    icon: ShoppingCart,
+  },
+  {
     name: "Video",
     href: "/dashboard/video",
     icon: Video,

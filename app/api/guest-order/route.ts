@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
   try {
     const orders = await OrderModel.find({
-      $or: [{ guest: { $ne: true } }, { guest: { $exists: false } }],
+      guest: true,
     })
       .sort({ createdAt: -1 })
       .limit(limit ?? 0)
@@ -22,18 +22,13 @@ export async function GET(req: Request) {
 
     const ordersWithUserDetails = await Promise.all(
       orders.map(async (order) => {
-        const user = await UserModel.findById(order.userId)
-          .select("firstName lastName email phone address")
-          .lean();
-
         return {
           ...order,
           user: {
-            firstName: (user as any)?.firstName,
-            lastName: (user as any)?.lastName,
-            email: (user as any)?.email,
-            phone: (user as any)?.phone,
-            address: (user as any)?.address,
+            name: (order.guestInfo as any)?.name,
+            email: (order.guestInfo as any)?.email,
+            phone: (order.guestInfo as any)?.phone,
+            address: (order.guestInfo as any)?.address,
           },
         };
       })

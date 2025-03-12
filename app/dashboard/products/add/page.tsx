@@ -20,6 +20,7 @@ const AddProduct = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [base64Image, setBase64Image] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File>();
 
   const categories = [
     "mikhwar-emarati",
@@ -54,12 +55,9 @@ const AddProduct = () => {
         // Créer une URL pour la prévisualisation
         const previewUrl = URL.createObjectURL(file);
         setImagePreview(previewUrl);
-
-        // Convertir l'image en base64
-        const base64 = await convertToBase64(file);
-        setBase64Image(base64);
+        setImageFile(file); // Stockez le fichier directement
       } catch (error) {
-        console.error("Erreur lors de la conversion de l'image:", error);
+        console.error("Erreur lors du chargement de l'image:", error);
         toast.error("Erreur lors du chargement de l'image");
       }
     }
@@ -69,32 +67,33 @@ const AddProduct = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const productData = {
-      name: formData.get("name"),
-      price: parseFloat(formData.get("price") as string),
-      image: base64Image, // Utiliser l'image en base64
-      description: formData.get("description"),
-      category: formData.get("category"),
-      details: {
-        material: formData.get("material"),
-        origin: formData.get("origin"),
-        care: formData.get("care"),
-        sizes: selectedSizes,
-      },
-      discount: formData.get("discount")
-        ? parseFloat(formData.get("discount") as string)
-        : undefined,
-      stock: parseInt(formData.get("stock") as string),
-    };
+    const formData = new FormData();
+
+    // Ajoutez tous les champs au FormData
+    formData.append("name", e.currentTarget.name.value);
+    formData.append("price", e.currentTarget.price.value);
+    formData.append("description", e.currentTarget.description.value);
+    formData.append("category", e.currentTarget.category.value);
+    formData.append("material", e.currentTarget.material.value);
+    formData.append("origin", e.currentTarget.origin.value);
+    formData.append("care", e.currentTarget.care.value);
+    formData.append("sizes", JSON.stringify(selectedSizes));
+
+    if (e.currentTarget.discount.value) {
+      formData.append("discount", e.currentTarget.discount.value);
+    }
+
+    formData.append("stock", e.currentTarget.stock.value);
+
+    // Ajouter le fichier image
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
 
     try {
       const response = await fetch("/api/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(productData),
+        body: formData, // Envoyez FormData directement (pas besoin de Content-Type)
       });
 
       if (!response.ok) {
@@ -108,9 +107,8 @@ const AddProduct = () => {
             color: "#22c55e",
           },
         });
+        // Réinitialiser le formulaire et les états
       }
-
-      // Réinitialiser le formulaire et les états
     } catch (error) {
       console.error("Erreur:", error);
       toast.error("Erreur lors de l'ajout du produit", {
@@ -266,11 +264,7 @@ const AddProduct = () => {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || !base64Image}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Ajout en cours..." : "Ajouter le produit"}
             </Button>
           </form>
