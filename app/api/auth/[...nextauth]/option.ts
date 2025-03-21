@@ -24,7 +24,7 @@ export const options: NextAuthOptions = {
       ): Promise<{ id: string; name: string; email: string } | null> {
 
         if (credentials) {
-          if (credentials?.email !== "zerguefkhadija@gmail.com") {
+          if (credentials?.email !== "khadijazf04@gmail.com") {
             throw new Error("Adresse E-mail incorrect");
           }
 

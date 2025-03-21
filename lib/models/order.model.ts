@@ -11,7 +11,18 @@ interface CartItem extends Document {
   size?: string;
 }
 
+export interface GUEST {
+  email: string;
+  name: string;
+  city: string;
+  address: string;
+  phone: string;
+  shippingRegion: string;
+}
+
 interface Order extends Document {
+  guest?: boolean;
+  guestInfo?: GUEST;
   orderNumber: string;
   userId: mongoose.Schema.Types.ObjectId;
   items: CartItem[];
@@ -66,6 +77,14 @@ const orderSchema = new Schema(
       ref: "User",
       required: true,
     },
+    guest: {
+      type: Boolean,
+      default: false,
+    },
+    guestInfo: {
+      type: Object,
+      default: {},
+    },
     items: {
       type: [cartItemSchema],
       required: true,
@@ -77,7 +96,7 @@ const orderSchema = new Schema(
     shipping: {
       type: Number,
       required: true,
-      default: 30,
+      default: 0,
     },
     shippingRegion: {
       type: String,
