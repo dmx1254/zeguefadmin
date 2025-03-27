@@ -97,18 +97,37 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const products = await ProductModel.find({})
-      .sort({ createdAt: -1 }) // Tri par date de création décroissante
-      .select("-__v") // Exclure le champ __v de mongoose
-      .lean(); // Convertir en objets JavaScript simples
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json(products);
+    // Get total count for pagination
+    const total = await ProductModel.countDocuments();
+
+    // Get paginated products
+    const products = await ProductModel.find({})
+      .sort({ createdAt: -1 })
+      .select("-__v")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return NextResponse.json({
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
-    console.error("Erreur lors de la récupération des produits:", error);
+    console.error("Error fetching products:", error);
     return NextResponse.json(
-      { error: "Erreur lors de la récupération des produits" },
+      { error: "Error fetching products" },
       { status: 500 }
     );
   }
