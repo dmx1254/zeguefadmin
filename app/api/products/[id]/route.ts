@@ -50,11 +50,11 @@ export async function PUT(
       discount: Number(formData.get("discount") as string),
     };
 
-    
-
     const notNullData = Object.fromEntries(
       Object.entries(updateData).filter(([_, value]) => !!value)
     );
+
+    // console.log("notNullData", notNullData);
 
     // console.log(productId);
     // console.log(notNullData);
@@ -69,6 +69,8 @@ export async function PUT(
     if (!updatedProduct) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
+
+    // console.log("Updated product:", updatedProduct);
 
     return NextResponse.json(
       { message: "Produit mis à jour avec success", product: updatedProduct },

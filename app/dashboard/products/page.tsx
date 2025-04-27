@@ -1,7 +1,7 @@
 // app/dashboard/products/page.tsx
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
@@ -46,10 +46,19 @@ export default function ProductsPage() {
     discount: "",
   });
 
+  const [products, setProducts] = useState<ProductDash[]>([]);
+
+  const [updatedProduct, setUpdatedProduct] = useState<ProductDash | null>(
+    null
+  );
+
   const { data, isLoading } = useQuery({
     queryKey: ["products", page],
     queryFn: async () => {
-      const res = await fetch(`/api/products?page=${page}&limit=${limit}`);
+      const res = await fetch(`/api/products?page=${page}&limit=${limit}`, {
+        method: "GET",
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
@@ -78,7 +87,7 @@ export default function ProductsPage() {
         method: "PUT",
         body: formDataToSend,
       });
-      
+
       setIsOpen(false);
 
       if (!res.ok) throw new Error("Erreur lors de la mise à jour du produit");
@@ -162,6 +171,22 @@ export default function ProductsPage() {
     });
   };
 
+  useEffect(() => {
+    if (data?.products) {
+      setProducts(data.products);
+    }
+
+    if (updatedProduct) {
+      const updatedProducts = products.map((product) => {
+        if (product._id === updatedProduct._id) {
+          return { ...product, ...updatedProduct };
+        }
+        return product;
+      });
+      setProducts(updatedProducts);
+    }
+  }, [data, updatedProduct]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -193,14 +218,14 @@ export default function ProductsPage() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : data?.products?.length === 0 ? (
+            ) : products?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-10">
                   No products found
                 </TableCell>
               </TableRow>
             ) : (
-              data?.products?.map((product: ProductDash) => (
+              products?.map((product: ProductDash) => (
                 <TableRow key={product._id}>
                   <TableCell>
                     <img

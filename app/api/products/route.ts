@@ -109,7 +109,7 @@ export async function GET(req: Request) {
 
     // Get paginated products
     const products = await ProductModel.find({})
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 })
       .select("-__v")
       .skip(skip)
       .limit(limit)
